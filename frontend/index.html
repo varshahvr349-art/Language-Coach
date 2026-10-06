@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LinguaAI - Language Coach</title>
+
+    <!-- Font Awesome -->
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+
+    <nav>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-brand-hot rounded-lg flex items-center justify-center">
+                <i class="fas fa-language text-white"></i>
+            </div>
+
+            <span class="font-space font-bold text-xl text-gray-900">
+                LinguaAI
+            </span>
+        </div>
+
+        <span class="text-gray-400 text-sm">
+            AI-Powered Language Coach
+        </span>
+    </nav>
+
+
+    <!-- ==================== WELCOME STATE ==================== -->
+
+    <div id="welcomeState">
+
+        <!-- HERO -->
+
+        <section class="hero">
+            <div class="hero-container">
+
+                <div class="flex-1">
+
+                    <h1 class="hero-title">
+                        Learn faster<br>
+                        with your AI<br>
+                        language coach.
+                    </h1>
+
+                    <p class="hero-description">
+                        Practice real conversations with Nancy,
+                        your personal AI tutor who adapts to your level.
+                    </p>
+
+                    <a href="#setup" class="start-link">
+                        Start practicing
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+
+                <div class="flex-1 flex justify-center">
+
+                    <div class="relative">
+
+                        <div class="hero-image">
+                            <img
+                                src="https://nkb-backend-ccbp-media-static.s3-ap-south-1.amazonaws.com/ccbp_beta/media/content_loading/uploads/8e08a67a-3e1f-440d-9b2f-7594772ead62_b52a6fed10d6618563b1fdff599ab4e3%20(1).png"
+                                alt="Nancy - AI Coach"
+                                class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="absolute bottom-negative-4 left-4 bg-white rounded-xl shadow-lg px-4 py-3 flex items-center gap-3">
+
+                            <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-pink-200">
+
+                                <img
+                                    src="https://nkb-backend-ccbp-media-static.s3-ap-south-1.amazonaws.com/ccbp_beta/media/content_loading/uploads/8e08a67a-3e1f-440d-9b2f-7594772ead62_b52a6fed10d6618563b1fdff599ab4e3%20(1).png"
+                                    alt="Nancy"
+                                    class="w-full h-full object-cover">
+
+                            </div>
+
+                            <div>
+
+                                <p class="font-semibold text-sm text-gray-900">
+                                    Nancy
+                                </p>
+
+                                <p class="text-xs text-gray-500">
+                                    AI Coach
+                                    <span class="text-brand-hot font-medium">
+                                        ★ 4.9
+                                    </span>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ==================== STATS ==================== -->
+
+        <section class="stats-bar">
+
+            <div class="stats-container">
+
+                <div>
+                    <p class="font-space font-bold text-2xl text-gray-900">
+                        7+
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Languages
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-space font-bold text-2xl text-gray-900">
+                        6+
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Scenarios
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-space font-bold text-2xl text-gray-900">
+                        5
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Exchanges per session
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-space font-bold text-2xl text-gray-900">
+                        AI
+                    </p>
+                    <p class="text-gray-500 text-sm">
+                        Powered feedback
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-1">
+
+                    <p class="font-space font-bold text-2xl text-gray-900">
+                        4.8
+                    </p>
+
+                    <div class="text-yellow-400 text-sm">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==================== SETUP ==================== -->
+
+        <div id="setup" class="setup-container">
+
+            <h2 class="section-title">
+                Choose a language
+            </h2>
+
+            <p class="section-description">
+                Select which language you'd like to practice today
+            </p>
+
+
+            <!-- LANGUAGE CARDS -->
+
+            <div class="language-grid">
+
+                <button class="lang-card" data-lang="French">
+                    <span class="text-3xl">🇫🇷</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        French
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="Spanish">
+                    <span class="text-3xl">🇪🇸</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        Spanish
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="Hindi">
+                    <span class="text-3xl">🇮🇳</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        Hindi
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="Japanese">
+                    <span class="text-3xl">🇯🇵</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        Japanese
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="German">
+                    <span class="text-3xl">🇩🇪</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        German
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="Telugu">
+                    <span class="text-3xl">🇮🇳</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        Telugu
+                    </span>
+                </button>
+
+                <button class="lang-card" data-lang="Tamil">
+                    <span class="text-3xl">🇮🇳</span>
+                    <span class="font-semibold text-sm text-gray-900">
+                        Tamil
+                    </span>
+                </button>
+
+            </div>
+
+
+            <!-- SCENARIOS -->
+
+            <div id="scenarioSection" class="hidden">
+
+                <h2 class="section-title">
+                    What's your scenario?
+                </h2>
+
+                <p class="section-description">
+                    Pick a real-life situation to practice
+                </p>
+
+
+                <div class="scenario-grid">
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="ordering food at a restaurant">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Ordering Food
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                At a restaurant
+                            </p>
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="asking for directions">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-map-signs"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Asking Directions
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Finding your way
+                            </p>
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="job interview">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Job Interview
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Professional setting
+                            </p>
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="shopping at a market">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Shopping
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                At a market
+                            </p>
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="checking into a hotel">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-hotel"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Hotel Check-in
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Checking in
+                            </p>
+                        </div>
+
+                    </button>
+
+
+                    <button
+                        class="scenario-option"
+                        data-scenario="visiting a doctor">
+
+                        <div class="scenario-icon">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+
+                        <div>
+                            <p class="font-semibold text-sm text-gray-900">
+                                Doctor Visit
+                            </p>
+
+                            <p class="text-xs text-gray-500">
+                                Health conversation
+                            </p>
+                        </div>
+
+                    </button>
+
+                </div>
+
+
+                <button
+                    id="beginSessionBtn"
+                    disabled
+                    class="pink-button begin-button">
+
+                    Begin Session
+                    <i class="fas fa-arrow-right ml-2"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Hidden selects for JavaScript -->
+    <select id="languageSelect" class="hidden"></select>
+    <select id="scenarioSelect" class="hidden"></select>
+
+
+    <!-- ==================== SESSION ==================== -->
+
+    <div id="sessionState" class="hidden">
+
+        <div class="session-container">
+
+            <div class="session-top">
+
+                <div class="badge-group">
+
+                    <span id="languageBadge" class="language-badge">
+                        French
+                    </span>
+
+                    <span id="scenarioBadge" class="scenario-badge">
+                        Ordering Food
+                    </span>
+
+                </div>
+
+
+                <div class="exchange-badge">
+
+                    <div class="dots">
+                        <div class="dot dot-pink"></div>
+                        <div class="dot dot-light"></div>
+                        <div class="dot dot-light"></div>
+                        <div class="dot dot-gray"></div>
+                        <div class="dot dot-gray"></div>
+                    </div>
+
+                    <span class="text-gray-600 text-sm">
+                        Exchange
+                        <span id="exchangeNum" class="text-brand-hot font-bold">
+                            1
+                        </span>
+                        /5
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- SESSION MAIN -->
+
+            <div class="session-main">
+
+                <!-- NANCY -->
+
+                <div class="nancy-column">
+
+                    <div class="relative mb-4">
+
+                        <div class="nancy-image">
+
+                            <img
+                                src="https://nkb-backend-ccbp-media-static.s3-ap-south-1.amazonaws.com/ccbp_beta/media/content_loading/uploads/8e08a67a-3e1f-440d-9b2f-7594772ead62_b52a6fed10d6618563b1fdff599ab4e3%20(1).png"
+                                alt="Nancy"
+                                class="w-full h-full object-cover">
+
+                        </div>
+
+                        <div class="microphone-badge">
+                            <i class="fas fa-microphone text-white text-sm"></i>
+                        </div>
+
+                    </div>
+
+                    <p class="text-gray-900 text-lg font-semibold">
+                        Nancy
+                    </p>
+
+                    <p class="text-gray-500 text-sm">
+                        Your Language Coach
+                    </p>
+
+
+                    <div
+                        id="speakingBubble"
+                        class="hidden speaking-bubble">
+
+                        <div class="wave-container">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+
+                        <span class="text-gray-700 text-sm font-medium">
+                            Speaking...
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTROLS -->
+
+                <div class="controls">
+
+                    <button
+                        id="startSessionBtn"
+                        class="pink-button conversation-button">
+
+                        <i class="fas fa-play mr-2"></i>
+                        Start Conversation
+
+                    </button>
+
+
+                    <button
+                        id="recordBtn"
+                        disabled
+                        class="hidden record-button">
+
+                        <i
+                            id="micIcon"
+                            class="fas fa-microphone text-3xl">
+                        </i>
+
+                        <i
+                            id="stopIcon"
+                            class="fas fa-stop text-3xl hidden">
+                        </i>
+
+                    </button>
+
+
+                    <p
+                        id="recordingStatus"
+                        class="text-gray-500 text-base mb-6">
+
+                        Click Start Conversation to begin
+
+                    </p>
+
+
+                    <button
+                        id="submitBtn"
+                        disabled
+                        class="hidden pink-button submit-button">
+
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Submit Response
+
+                    </button>
+
+
+                    <button
+                        id="endSessionBtn"
+                        disabled
+                        class="end-button">
+
+                        <i class="fas fa-stop-circle mr-1"></i>
+                        End Conversation
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- ==================== FEEDBACK ==================== -->
+
+            <div id="feedbackSection" class="hidden">
+
+                <div
+                    id="getFeedbackArea"
+                    class="text-center mb-8">
+
+                    <div class="feedback-complete">
+
+                        <i class="fas fa-check-circle text-green-500"></i>
+
+                        <span class="text-gray-700 text-base">
+                            Conversation completed!
+                        </span>
+
+                    </div>
+
+                    <br>
+
+                    <button
+                        id="getFeedbackBtn"
+                        class="pink-button feedback-button">
+
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        Get Feedback
+
+                    </button>
+
+                </div>
+
+
+                <!-- FEEDBACK CONTENT -->
+
+                <div
+                    id="feedbackContent"
+                    class="hidden feedback-content">
+
+                    <!-- SCORES -->
+
+                    <div class="score-grid">
+
+                        <div class="language-card">
+
+                            <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">
+                                Language
+                            </p>
+
+                            <h3
+                                id="feedbackLanguage"
+                                class="font-space text-xl font-bold text-gray-900">
+                                Language
+                            </h3>
+
+                            <p
+                                id="feedbackScenario"
+                                class="text-gray-500 text-xs mt-1">
+                            </p>
+
+                        </div>
+
+
+                        <!-- FLUENCY -->
+
+                        <div class="score-card">
+
+                            <p class="text-gray-500 text-xs uppercase tracking-wider mb-3">
+                                Fluency
+                            </p>
+
+                            <div class="score-circle">
+
+                                <svg>
+
+                                    <circle
+                                        cx="48"
+                                        cy="48"
+                                        r="40"
+                                        stroke="#f3f4f6"
+                                        stroke-width="5"
+                                        fill="none">
+                                    </circle>
+
+                                    <circle
+                                        id="fluencyCircle"
+                                        cx="48"
+                                        cy="48"
+                                        r="40"
+                                        stroke="#FF69B4"
+                                        stroke-width="5"
+                                        fill="none"
+                                        stroke-dasharray="251.2"
+                                        stroke-dashoffset="251.2"
+                                        stroke-linecap="round">
+                                    </circle>
+
+                                </svg>
+
+                                <div class="score-number">
+
+                                    <span
+                                        id="fluencyValue"
+                                        class="score-number-main">
+                                        0
+                                    </span>
+
+                                    <span class="score-number-small">
+                                        /10
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- GRAMMAR -->
+
+                        <div class="score-card">
+
+                            <p class="text-gray-500 text-xs uppercase tracking-wider mb-3">
+                                Grammar
+                            </p>
+
+                            <div class="score-circle">
+
+                                <svg>
+
+                                    <circle
+                                        cx="48"
+                                        cy="48"
+                                        r="40"
+                                        stroke="#f3f4f6"
+                                        stroke-width="5"
+                                        fill="none">
+                                    </circle>
+
+                                    <circle
+                                        id="grammarCircle"
+                                        cx="48"
+                                        cy="48"
+                                        r="40"
+                                        stroke="#FF69B4"
+                                        stroke-width="5"
+                                        fill="none"
+                                        stroke-dasharray="251.2"
+                                        stroke-dashoffset="251.2"
+                                        stroke-linecap="round">
+                                    </circle>
+
+                                </svg>
+
+                                <div class="score-number">
+
+                                    <span
+                                        id="grammarValue"
+                                        class="score-number-main">
+                                        0
+                                    </span>
+
+                                    <span class="score-number-small">
+                                        /10
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VOCABULARY + TIP -->
+
+                    <div class="feedback-cards">
+
+                        <div class="feedback-card">
+
+                            <h4>
+                                <i class="fas fa-book text-brand-hot"></i>
+                                Vocabulary Range
+                            </h4>
+
+                            <p id="vocabularyText"></p>
+
+                        </div>
+
+
+                        <div class="feedback-card">
+
+                            <h4>
+                                <i class="fas fa-star text-yellow-400"></i>
+                                Conversation Tip
+                            </h4>
+
+                            <p id="conversationTipText"></p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- GRAMMAR MISTAKES -->
+
+                    <div class="mistakes-card">
+
+                        <h4>
+                            <i class="fas fa-pen-fancy text-brand-hot"></i>
+                            Grammar Mistakes
+                        </h4>
+
+                        <div class="table-wrapper">
+
+                            <table class="mistakes-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>You Said</th>
+                                        <th>Correct</th>
+                                        <th>Rule</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="mistakesTable"></tbody>
+
+                            </table>
+
+                        </div>
+
+                        <p
+                            id="noMistakesText"
+                            class="hidden text-gray-500 text-sm">
+
+                            No grammar mistakes detected!
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- NEW WORDS -->
+
+                    <div class="new-words">
+
+                        <h4>
+                            <i class="fas fa-lightbulb text-amber-400"></i>
+                            New Words to Learn
+                        </h4>
+
+                        <div
+                            id="newWordsArea"
+                            class="new-words-area">
+                        </div>
+
+                    </div>
+
+
+                    <!-- NEW SESSION -->
+
+                    <div class="text-center">
+
+                        <button
+                            id="newSessionBtn"
+                            class="new-session-button">
+
+                            <i class="fas fa-redo mr-2"></i>
+                            Start New Session
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="index.js"></script>
+
+</body>
+</html>
