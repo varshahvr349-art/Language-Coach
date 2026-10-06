@@ -9,6 +9,7 @@ let currentLanguage = null;
 let currentScenario = null;
 let isSpeaking = false;
 let currentAudio = null;
+let audioObjectUrls = [];
 let selectedLanguage = null;
 let selectedScenario = null;
 
@@ -25,6 +26,7 @@ const languageBadge = document.getElementById("languageBadge");
 const scenarioBadge = document.getElementById("scenarioBadge");
 const exchangeNum = document.getElementById("exchangeNum");
 const speakingBubble = document.getElementById("speakingBubble");
+const conversationMessages = document.getElementById("conversationMessages");
 const startSessionBtn = document.getElementById("startSessionBtn");
 const recordBtn = document.getElementById("recordBtn");
 const micIcon = document.getElementById("micIcon");
@@ -63,6 +65,7 @@ function showSessionPanel(language, scenario) {
     languageBadge.textContent = language;
     scenarioBadge.textContent = scenario;
     exchangeNum.textContent = "1";
+    conversationMessages.replaceChildren();
 
     speakingBubble.classList.add("hidden");
     startSessionBtn.classList.remove("hidden");
@@ -173,6 +176,10 @@ function resetToWelcome() {
         currentAudio.pause();
         currentAudio = null;
     }
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    audioObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+    audioObjectUrls = [];
+    conversationMessages.replaceChildren();
 
     // Reset card selections
     langCards.forEach((c) => c.classList.remove("selected"));
@@ -200,92 +207,199 @@ function resetToWelcome() {
 
 // ========== AUDIO FUNCTIONS ==========
 
-function handleAudioStream(response, onComplete) {
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let mediaSource = new MediaSource();
-    let audioUrl = URL.createObjectURL(mediaSource);
-    let sourceBuffer;
-    let queue = [];
-    let isSourceBufferReady = false;
+function createAIMessage() {
+    const article = document.createElement("article");
+    article.className = "ai-message";
 
-    // Show speaking bubble when streaming starts
-    speakingBubble.classList.remove("hidden");
-    isSpeaking = true;
-    recordBtn.disabled = true;
-    recordingStatus.textContent = "Listening...";
+    const label = document.createElement("div");
+    label.className = "ai-message-label";
+    label.textContent = "Nancy · AI Coach";
 
+    const message = document.createElement("p");
+    message.className = "ai-message-text";
+    message.textContent = "Waiting for response...";
+
+    const status = document.createElement("p");
+    status.className = "voice-status";
+    status.textContent = "🔊 Generating AI voice...";
+
+    const media = document.createElement("div");
+    media.className = "ai-message-media";
+
+    article.append(label, message, status, media);
+    conversationMessages.appendChild(article);
+    article.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return { article, message, status, media, text: "" };
+}
+
+function setVoiceStatus(message, status) {
+    if (message) message.status.textContent = status;
+}
+
+function finishVoice(message, onSessionComplete) {
+    isSpeaking = false;
+    hideSpeakingBubble();
+    if (!feedbackSection.classList.contains("hidden")) return;
+    enableRecording();
+    if (onSessionComplete) showFeedbackSection();
+}
+
+function speakWithBrowser(message, onSessionComplete) {
+    setVoiceStatus(message, "Murf voice unavailable — using backup voice");
+    message.media.replaceChildren();
+
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined" || !message.text.trim()) {
+        setVoiceStatus(message, "Voice is currently unavailable. You can continue using the text response.");
+        finishVoice(message, onSessionComplete);
+        return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(message.text);
+    const langCodes = { French: "fr-FR", Spanish: "es-ES", Hindi: "hi-IN", Japanese: "ja-JP", German: "de-DE", Telugu: "te-IN", Tamil: "ta-IN" };
+    utterance.lang = langCodes[currentLanguage] || "en-US";
+    utterance.onstart = () => {
+        isSpeaking = true;
+        showSpeakingBubble();
+        setVoiceStatus(message, "🔊 Backup voice speaking...");
+    };
+    utterance.onend = () => {
+        setVoiceStatus(message, "✓ Backup voice completed — replay available");
+        finishVoice(message, onSessionComplete);
+    };
+    utterance.onerror = () => {
+        setVoiceStatus(message, "Voice is currently unavailable. You can continue using the text response.");
+        finishVoice(message, onSessionComplete);
+    };
+
+    const replay = document.createElement("button");
+    replay.type = "button";
+    replay.className = "replay-voice-button";
+    replay.textContent = "Replay backup voice";
+    replay.addEventListener("click", () => {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    });
+    message.media.appendChild(replay);
+
+    try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+    } catch (error) {
+        setVoiceStatus(message, "Voice is currently unavailable. You can continue using the text response.");
+        finishVoice(message, onSessionComplete);
+    }
+}
+
+async function handleAudioStream(response, message, onSessionComplete) {
     if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
     }
-    currentAudio = new Audio(audioUrl);
-    currentAudio.play().catch((error) => {
-        console.error("Audio playback failed:", error);
-        recordingStatus.textContent = "Audio playback failed";
-    });
- 
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
 
-    mediaSource.addEventListener("sourceopen", () => {
-        sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-        isSourceBufferReady = true;
-        while (queue.length > 0 && !sourceBuffer.updating) {
-            sourceBuffer.appendBuffer(queue.shift());
-        }
-        sourceBuffer.addEventListener("updateend", () => {
-            if (queue.length > 0 && !sourceBuffer.updating) {
-                sourceBuffer.appendBuffer(queue.shift());
-            }
-        });
-    });
+    let audioChunks = [];
+    let audioEnded = false;
+    let voiceFailed = false;
 
-    function processChunk({ done, value }) {
-        if (done) {
-            if (mediaSource.readyState === "open") {
-                try {
-                    mediaSource.endOfStream();
-                } catch (e) { }
+    try {
+        if (!response.ok) throw new Error(`Voice request failed (${response.status})`);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        const handleLine = (line) => {
+            if (!line.trim()) return;
+            const event = JSON.parse(line);
+            if (event.type === "text") {
+                message.text = event.text || "";
+                message.message.textContent = message.text;
+            } else if (event.type === "audio" && event.data) {
+                const binary = atob(event.data);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                audioChunks.push(bytes);
+            } else if (event.type === "audio_end") {
+                audioEnded = true;
+            } else if (event.type === "voice_error") {
+                voiceFailed = true;
             }
-            if (onComplete) onComplete();
-            return;
+        };
+
+        while (true) {
+            const { done, value } = await reader.read();
+            buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
+            lines.forEach(handleLine);
+            if (done) break;
         }
-        const textChunk = decoder.decode(value, { stream: true });
-        textChunk.split("\n").forEach((line) => {
-            if (line.trim()) {
-                try {
-                    const binaryString = atob(line);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    if (isSourceBufferReady && !sourceBuffer.updating) {
-                        sourceBuffer.appendBuffer(bytes);
-                    } else {
-                        queue.push(bytes);
-                    }
-                } catch (e) {
-                    console.error("Base64 decode error:", e);
-                }
-            }
-        });
-        reader.read().then(processChunk);
+        if (buffer.trim()) handleLine(buffer);
+    } catch (error) {
+        console.warn("Murf voice unavailable:", error.message);
+        voiceFailed = true;
     }
 
-    reader.read().then(processChunk);
+    if (!message.text.trim()) {
+        message.message.textContent = "The AI response could not be loaded. Please try again.";
+        setVoiceStatus(message, "Voice is currently unavailable. You can continue using the text response.");
+        finishVoice(message, onSessionComplete);
+        return;
+    }
 
-    currentAudio.onended = () => {
-        isSpeaking = false;
-        speakingBubble.classList.add("hidden");
-        enableRecording();
-        URL.revokeObjectURL(audioUrl);
-    };
+    if (voiceFailed || !audioEnded || !audioChunks.length) {
+        speakWithBrowser(message, onSessionComplete);
+        return;
+    }
 
-    currentAudio.onerror = () => {
-        isSpeaking = false;
-        speakingBubble.classList.add("hidden");
-        enableRecording();
-        URL.revokeObjectURL(audioUrl);
-    };
+    try {
+        const audioBlob = new Blob(audioChunks, { type: "audio/mpeg" });
+        if (!audioBlob.size) throw new Error("Empty audio");
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioObjectUrls.push(audioUrl);
+        const player = document.createElement("audio");
+        player.className = "ai-audio-player";
+        player.controls = true;
+        player.preload = "metadata";
+        player.src = audioUrl;
+        player.addEventListener("playing", () => {
+            isSpeaking = true;
+            showSpeakingBubble();
+            setVoiceStatus(message, "🔊 AI Speaking...");
+        });
+        player.addEventListener("pause", () => {
+            if (!player.ended) {
+                isSpeaking = false;
+                hideSpeakingBubble();
+                setVoiceStatus(message, "🔊 AI Voice Ready — paused");
+            }
+        });
+        player.addEventListener("ended", () => {
+            setVoiceStatus(message, "✓ Audio completed");
+            finishVoice(message, onSessionComplete);
+        });
+        player.addEventListener("error", () => {
+            setVoiceStatus(message, "Murf voice unavailable — using backup voice");
+            URL.revokeObjectURL(audioUrl);
+            audioObjectUrls = audioObjectUrls.filter((url) => url !== audioUrl);
+            if (currentAudio === player) currentAudio = null;
+            speakWithBrowser(message, onSessionComplete);
+        }, { once: true });
+        message.media.replaceChildren(player);
+        setVoiceStatus(message, "🔊 AI Voice Ready");
+        currentAudio = player;
+        isSpeaking = true;
+        recordBtn.disabled = true;
+        try {
+            await player.play();
+        } catch (error) {
+            isSpeaking = false;
+            hideSpeakingBubble();
+            setVoiceStatus(message, "🔊 AI Voice Ready — press Play to listen");
+            enableRecording();
+            if (onSessionComplete) showFeedbackSection();
+        }
+    } catch (error) {
+        speakWithBrowser(message, onSessionComplete);
+    }
 }
 
 
@@ -351,7 +465,8 @@ const startSessionApiUrl = "http://127.0.0.1:5001/start-session";
 async function startSession() {
     startSessionBtn.classList.add("hidden");
     recordBtn.classList.remove("hidden");
-    recordingStatus.textContent = "Connecting...";
+    recordingStatus.textContent = "Generating AI response...";
+    const aiMessage = createAIMessage();
 
     try {
         const response = await fetch(startSessionApiUrl, {
@@ -360,19 +475,13 @@ async function startSession() {
             body: JSON.stringify({ language: currentLanguage, scenario: currentScenario })
         });
 
-        const contentType = response.headers.get("content-type");
-
-        if (contentType && contentType.includes("text/plain")) {
-            handleAudioStream(response, () => {
-                endSessionBtn.disabled = false;
-            });
-        } else {
-            enableRecording();
-            endSessionBtn.disabled = false;
-        }
+        await handleAudioStream(response, aiMessage);
     } catch (error) {
+        aiMessage.message.textContent = "The AI response could not be loaded. Please try again.";
+        setVoiceStatus(aiMessage, "Voice is currently unavailable. You can continue using the text response.");
         recordingStatus.textContent = "Backend not connected";
         hideSpeakingBubble();
+        enableRecording();
         recordBtn.classList.add("hidden");
         startSessionBtn.classList.remove("hidden");
     }
@@ -385,7 +494,8 @@ async function submitResponse() {
     if (!recordedBlob) return;
 
     disableRecording();
-    recordingStatus.textContent = "Submitting...";
+    recordingStatus.textContent = "Generating AI response...";
+    const aiMessage = createAIMessage();
 
     const formData = new FormData();
     formData.append("audio", recordedBlob, "response.webm");
@@ -396,7 +506,6 @@ async function submitResponse() {
             body: formData
         });
 
-        const contentType = response.headers.get("content-type");
         const isComplete = response.headers.get('X-Session-Complete') === 'true';
         const exchangeNumber = response.headers.get('X-Exchange-Number');
 
@@ -404,33 +513,12 @@ async function submitResponse() {
             updateExchangeNumber(exchangeNumber);
         }
 
-        if (contentType && contentType.includes("text/plain")) {
-            handleAudioStream(response, () => {
-                recordedBlob = null;
-                recordingChunks = [];
-
-                if (isComplete) {
-                    currentAudio.onended = () => {
-                        isSpeaking = false;
-                        hideSpeakingBubble();
-                        showFeedbackSection();
-                    };
-                } else {
-                    endSessionBtn.disabled = false;
-                }
-            });
-        } else {
-            recordedBlob = null;
-            recordingChunks = [];
-
-            if (isComplete) {
-                showFeedbackSection();
-            } else {
-                enableRecording();
-                endSessionBtn.disabled = false;
-            }
-        }
+        recordedBlob = null;
+        recordingChunks = [];
+        await handleAudioStream(response, aiMessage, isComplete);
     } catch (error) {
+        aiMessage.message.textContent = "The AI response could not be loaded. Please try again.";
+        setVoiceStatus(aiMessage, "Voice is currently unavailable. You can continue using the text response.");
         recordingStatus.textContent = "Connection error";
         hideSpeakingBubble();
         enableRecording();

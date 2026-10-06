@@ -1,4 +1,4 @@
-from flask import Flask,request,jsonify,Response
+from flask import Flask,request,jsonify,Response,send_from_directory,stream_with_context
 from flask_cors import CORS
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
@@ -88,9 +88,16 @@ FEEDBACK_PROMPT = """Based on our complete conversation session, provide detaile
     Be specific - reference ACTUAL things they said during the conversation."""
 
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="../frontend",
+    static_url_path=""
+    )
 
 CORS(app, expose_headers=['X-Exchange-Number', 'X-Session-Complete'])
+@app.route("/")
+def home():
+    return send_from_directory("../frontend", "index.html")
 def stream_audio(text):
 
     # Convert Gemini content list to plain text
@@ -130,20 +137,55 @@ def stream_audio(text):
         BASE_URL,
         headers=headers,
         json=payload,
-        stream=True
+        stream=True,
+        timeout=(10, 120)
     )
 
     print("Murf status:", response.status_code)
     print("Murf content-type:", response.headers.get("Content-Type"))
 
     if response.status_code != 200:
-        print("Murf error:")
-        print(response.text)
-        return
+        error_text = response.text
+        response.close()
+        raise RuntimeError(f"Murf returned {response.status_code}: {error_text}")
 
-    for chunk in response.iter_content(chunk_size=4096):
-        if chunk:
-            yield base64.b64encode(chunk).decode("utf-8") + "\n"
+    def audio_chunks():
+        try:
+            for chunk in response.iter_content(chunk_size=4096):
+                if chunk:
+                    yield chunk
+        finally:
+            response.close()
+
+    return audio_chunks()
+
+
+def audio_response(text, headers=None):
+    """Stream response text followed by audio chunks or a safe voice error event."""
+    if isinstance(text, list):
+        text = "".join(
+            item.get("text", "") if isinstance(item, dict) else str(item)
+            for item in text
+        )
+
+    def events():
+        yield json.dumps({"type": "text", "text": text}, ensure_ascii=False) + "\n"
+        try:
+            for chunk in stream_audio(text):
+                yield json.dumps({
+                    "type": "audio",
+                    "data": base64.b64encode(chunk).decode("ascii")
+                }) + "\n"
+            yield json.dumps({"type": "audio_end"}) + "\n"
+        except (requests.RequestException, RuntimeError):
+            app.logger.warning("Murf speech generation failed")
+            yield json.dumps({"type": "voice_error"}) + "\n"
+
+    return Response(
+        stream_with_context(events()),
+        mimetype="application/x-ndjson",
+        headers=headers or {}
+    )
 
 @app.route("/start-session", methods=["POST"])
 def start_session():
@@ -168,7 +210,7 @@ def start_session():
     }, config=config)
     message = response["messages"][-1].content
     print(f"\n[Exchange {exchange_count}] {message}")
-    return stream_audio(message), {"Content-Type": "text/plain"}
+    return audio_response(message)
 
 def speech_to_text(audio_path):
     """Convert audio file to text using AssemblyAI"""
@@ -213,11 +255,7 @@ def submit_response():
         closing_message = response["messages"][-1].content
         print(f"\n[Closing] {closing_message}")
 
-        return Response(
-            stream_audio(closing_message),
-            mimetype='text/plain',
-            headers={'X-Session-Complete': 'true'}
-        )
+        return audio_response(closing_message, {'X-Session-Complete': 'true'})
 
     exchange_count += 1
 
@@ -239,11 +277,7 @@ Be conversational but CONCISE. Only reference what they truly said."""
     message = response["messages"][-1].content
     print(f"\n[Exchange {exchange_count}] {message}")
 
-    return Response(
-        stream_audio(message),
-        mimetype='text/plain',
-        headers={'X-Exchange-Number': str(exchange_count)}
-    )
+    return audio_response(message, {'X-Exchange-Number': str(exchange_count)})
 
 @app.route("/get-feedback", methods=["POST"])
 def get_feedback():

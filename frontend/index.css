@@ -1032,6 +1032,61 @@ nav {
     border: 1px solid #f3f4f6;
 }
 
+.conversation-messages {
+    width: min(100%, 620px);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0 0 20px;
+}
+
+.ai-message {
+    width: 100%;
+    padding: 16px 18px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #fbcfe8;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(190, 24, 93, .06);
+}
+
+.ai-message-label {
+    margin-bottom: 6px;
+    color: #be185d;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.ai-message-text {
+    color: #374151;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.voice-status {
+    margin-top: 12px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.ai-audio-player {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.replay-voice-button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    color: #be185d;
+    background: #fff0f3;
+    border: 1px solid #fbcfe8;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
 .conversation-button {
     padding: 16px 40px;
     border-radius: 9999px;
